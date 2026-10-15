@@ -1447,6 +1447,7 @@ GameObject:
   - component: {fileID: 2550293436682645114}
   - component: {fileID: 426045580450923874}
   - component: {fileID: 8687737207959842141}
+  - component: {fileID: 6766600038461642032}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -1492,6 +1493,7 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 2550293436682645114}
   - {fileID: 2832144883721897763}
+  - {fileID: 6766600038461642032}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &2832144883721897763
 MonoBehaviour:
@@ -1631,6 +1633,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6766600038461642032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5609267092368825421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2e849f21bf8baa42b59972facf13697, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerColor
+  Body: {fileID: 2016103795999099340}
+  _BodyColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &5670184363679267682
 GameObject:
   m_ObjectHideFlags: 0
