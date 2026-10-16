@@ -1646,7 +1646,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerColor
   Body: {fileID: 2016103795999099340}
-  _BodyColor: {r: 0, g: 0, b: 0, a: 0}
+  _BodyColor: {r: 0.4056604, g: 0.2506675, b: 0.2506675, a: 0}
 --- !u!1 &5670184363679267682
 GameObject:
   m_ObjectHideFlags: 0

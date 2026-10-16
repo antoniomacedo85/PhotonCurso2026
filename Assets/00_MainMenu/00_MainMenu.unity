@@ -641,6 +641,11 @@ PrefabInstance:
       propertyPath: m_text
       value: SHOOTER
       objectReference: {fileID: 0}
+    - target: {fileID: 5186945006009659335, guid: 60c854a7c3436694aafac5e8e6621e06,
+        type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
     - target: {fileID: 7676353461448634685, guid: 60c854a7c3436694aafac5e8e6621e06,
         type: 3}
       propertyPath: m_Pivot.x
@@ -986,6 +991,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_text
       value: PLATFORMER
+      objectReference: {fileID: 0}
+    - target: {fileID: 5186945006009659335, guid: 60c854a7c3436694aafac5e8e6621e06,
+        type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
       objectReference: {fileID: 0}
     - target: {fileID: 7676353461448634685, guid: 60c854a7c3436694aafac5e8e6621e06,
         type: 3}
@@ -1672,6 +1682,11 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 315128376}
+    - target: {fileID: 5186945006009659335, guid: 60c854a7c3436694aafac5e8e6621e06,
+        type: 3}
+      propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
+      value: 1801810542
+      objectReference: {fileID: 0}
     - target: {fileID: 7676353461448634685, guid: 60c854a7c3436694aafac5e8e6621e06,
         type: 3}
       propertyPath: m_Pivot.x
