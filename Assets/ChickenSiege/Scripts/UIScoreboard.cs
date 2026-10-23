@@ -58,7 +58,7 @@ namespace Starter.Shooter
             PlayerRef master = MasterReference != null && MasterReference.IsValid ? MasterReference.StateAuthority : PlayerRef.None;
 
             _builder.Clear();
-            _builder.Append("<color=#A0A8B3>Jugador<pos=80%>Pollos</color>\n");
+            _builder.Append("<color=#A0A8B3>Jugador<pos=80%>Puntos</color>\n");
 
             for (int i = 0; i < _players.Count; i++)
             {

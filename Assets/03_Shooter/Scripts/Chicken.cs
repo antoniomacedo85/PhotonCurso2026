@@ -21,6 +21,16 @@ namespace Starter.Shooter
         [Tooltip("Cacareo cuando recibe un disparo que no lo mata (la muerte suena con DeathSound, dentro de DeathRoot)")]
         public AudioClip HitClip;
 
+        // EJERCICIO 1 (solución): pollo dorado. Lo decide el master en ChickenSpawner.Respawn
+        // y todos lo pintan en OnGoldenChanged.
+        [Networked, OnChangedRender(nameof(OnGoldenChanged))]
+        public NetworkBool IsGolden { get; set; }
+
+        public Color GoldenColor = new Color(1f, 0.78f, 0.15f);
+
+        private Renderer[] _renderers;
+        private Color[] _originalColors;
+
         // Properties are used only on master client however it needs
         // to be networked to properly work when master client is changed.
         [Networked]
@@ -73,6 +83,52 @@ namespace Starter.Shooter
         private void Awake()
         {
             Health.HitReceived += OnHitReceived;
+        }
+
+        public override void Spawned()
+        {
+            // Quien entra tarde también ve los pollos dorados que ya existen
+            OnGoldenChanged();
+        }
+
+        private void OnGoldenChanged()
+        {
+            if (_renderers == null)
+            {
+                // Solo mallas del modelo (no las partículas)
+                var all = Health.VisualRoot.GetComponentsInChildren<Renderer>(true);
+                var list = new System.Collections.Generic.List<Renderer>();
+                foreach (var r in all)
+                {
+                    if (r is MeshRenderer || r is SkinnedMeshRenderer)
+                        list.Add(r);
+                }
+
+                _renderers = list.ToArray();
+                _originalColors = new Color[_renderers.Length];
+                for (int i = 0; i < _renderers.Length; i++)
+                {
+                    _originalColors[i] = GetColor(_renderers[i].material);
+                }
+            }
+
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                SetColor(_renderers[i].material, IsGolden ? GoldenColor : _originalColors[i]);
+            }
+        }
+
+        private static Color GetColor(Material material)
+        {
+            if (material.HasProperty("_BaseColor")) return material.GetColor("_BaseColor");
+            if (material.HasProperty("_Color")) return material.GetColor("_Color");
+            return Color.white;
+        }
+
+        private static void SetColor(Material material, Color color)
+        {
+            if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
+            if (material.HasProperty("_Color")) material.SetColor("_Color", color);
         }
 
         private void OnTriggerEnter(Collider other)

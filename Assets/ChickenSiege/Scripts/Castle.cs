@@ -82,6 +82,18 @@ namespace Starter.Shooter
             }
         }
 
+        /// <summary>
+        /// EJERCICIO 2 (solución): cualquier jugador pide reparar; solo el dueño (master) cambia la vida.
+        /// </summary>
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public void RPC_Repair(int amount)
+        {
+            if (Health.IsAlive == false)
+                return;
+
+            Health.CurrentHealth = Mathf.Min(Health.CurrentHealth + amount, Health.InitialHealth);
+        }
+
         private void OnHitReceived()
         {
             _shakeTimeLeft = ShakeDuration;

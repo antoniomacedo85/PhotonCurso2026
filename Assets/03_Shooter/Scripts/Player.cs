@@ -61,10 +61,10 @@ namespace Starter.Shooter
         [Networked, HideInInspector]
         public int ChickenKills { get; set; }
 
-        // EJERCICIO 1 (solución): estado "Listo" visible para todos.
-        // Solo el dueño (State Authority) lo cambia; los demás reciben el cambio en OnReadyChanged.
-        [Networked, OnChangedRender(nameof(OnReadyChanged))]
-        public NetworkBool IsReady { get; set; }
+        [Header("Chicken Siege · Reparar el castillo (ejercicio 2)")]
+        public float RepairDistance = 6f;
+        public int RepairAmount = 2;
+        public float RepairInterval = 0.5f;
 
         [Networked, OnChangedRender(nameof(OnJumpingChanged))]
         private NetworkBool _isJumping { get; set; }
@@ -80,6 +80,8 @@ namespace Starter.Shooter
         private float _fireCooldownEnd;
 
         private GameManager _gameManager;
+        private Castle _castle;
+        private float _nextRepairTime;
 
         public override void Spawned()
         {
@@ -95,8 +97,8 @@ namespace Starter.Shooter
             // we need to trigger the change manually
             OnNicknameChanged();
 
-            // EJERCICIO 1: quien entra tarde también tiene que ver el estado actual
-            OnReadyChanged();
+            // EJERCICIO 2: el castillo que podemos reparar (si la escena tiene uno)
+            _castle = FindFirstObjectByType<Castle>();
 
             // Reset visible fire count
             _visibleFireCount = _fireCount;
@@ -314,7 +316,9 @@ namespace Starter.Shooter
         private void OnEnemyKilled(Health enemyHealth)
         {
             // Killing chicken grants 1 point, killing other player has -10 points penalty.
-            ChickenKills += enemyHealth.GetComponent<Chicken>() != null ? 1 : -10;
+            // EJERCICIO 1 (solución): el pollo dorado vale 5.
+            var chicken = enemyHealth.GetComponent<Chicken>();
+            ChickenKills += chicken != null ? (chicken.IsGolden ? 5 : 1) : -10;
         }
 
         private void ShowFireEffects()
@@ -356,23 +360,24 @@ namespace Starter.Shooter
             }
         }
 
-        // EJERCICIO 1: la tecla R alterna "Listo". Solo el dueño puede escribir la propiedad.
+        // EJERCICIO 2 (solución): mantener E cerca del castillo lo repara.
+        // No somos dueños del castillo: no podemos escribir su vida, se lo pedimos al dueño con un RPC.
         private void Update()
         {
             if (Object == null || Object.IsValid == false || HasStateAuthority == false)
                 return;
 
             var keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
-            {
-                IsReady = !IsReady;
-            }
-        }
+            if (keyboard == null || _castle == null || Health.IsAlive == false)
+                return;
 
-        private void OnReadyChanged()
-        {
-            // El nameplate solo se ve en los jugadores remotos (el local no ve el suyo)
-            Nameplate.NicknameText.color = IsReady ? Color.green : Color.white;
+            if (keyboard.eKey.isPressed && Time.time >= _nextRepairTime &&
+                Vector3.Distance(transform.position, _castle.transform.position) <= RepairDistance)
+            {
+                // Intento ingenuo (solo funciona en el master): _castle.Health.CurrentHealth += RepairAmount;
+                _castle.RPC_Repair(RepairAmount);
+                _nextRepairTime = Time.time + RepairInterval;
+            }
         }
 
         private void OnNicknameChanged()

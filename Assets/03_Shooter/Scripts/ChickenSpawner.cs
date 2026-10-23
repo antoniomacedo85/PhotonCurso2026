@@ -21,6 +21,9 @@ namespace Starter.Shooter
         public float DirectionDispersion = 10f;
 
         [Header("Chicken Siege")]
+        [Tooltip("EJERCICIO 1: probabilidad de que un pollo salga dorado (vale 5 puntos)")]
+        [Range(0f, 1f)]
+        public float GoldenChance = 0.1f;
         [Tooltip("Collider al que apuntan los pollos (el del castillo). Vacío = el centro del spawner con dispersión")]
         public Collider Target;
 
@@ -93,6 +96,9 @@ namespace Starter.Shooter
 
             // CLASE 2: más vida en Difícil (Revive usa InitialHealth)
             chicken.Health.InitialHealth = Mathf.CeilToInt(ChickenPrefab.Health.InitialHealth * _healthMultiplier);
+
+            // EJERCICIO 1 (solución): el master decide si sale dorado; todos lo ven por OnChangedRender
+            chicken.IsGolden = Random.value < GoldenChance;
 
             chicken.Respawn(position, rotation, speed, SpawnRadius * 2.5f);
         }
