@@ -338,6 +338,9 @@ MonoBehaviour:
   DustParticles: {fileID: 4917586891687763835}
   _Nickname: 
   _ChickenKills: 0
+  RepairDistance: 6
+  RepairAmount: 1
+  RepairInterval: 0.5
 --- !u!114 &7362189930313428062
 MonoBehaviour:
   m_ObjectHideFlags: 0

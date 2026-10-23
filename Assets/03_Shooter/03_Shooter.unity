@@ -881,7 +881,7 @@ Transform:
   m_GameObject: {fileID: 124412140}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.919, y: 1.664, z: -4.58}
+  m_LocalPosition: {x: -5.919, y: 2.32, z: -4.58}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1401,7 +1401,7 @@ Transform:
   m_GameObject: {fileID: 337784367}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.254, y: 2.74, z: -7.481}
+  m_LocalPosition: {x: 7.254, y: 3.6, z: -7.481}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1596,7 +1596,7 @@ Transform:
   m_GameObject: {fileID: 367094076}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -18.935, y: 2.878, z: -2.41}
+  m_LocalPosition: {x: -18.935, y: 3.5, z: -2.41}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2802,7 +2802,7 @@ Transform:
   m_GameObject: {fileID: 602256872}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 11.333, y: 3.587, z: 0.52}
+  m_LocalPosition: {x: 11.333, y: 3.92, z: 0.52}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3102,7 +3102,7 @@ Transform:
   m_GameObject: {fileID: 655100288}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.37, y: 0.609, z: -0.21}
+  m_LocalPosition: {x: -0.01, y: 2.77, z: -5.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6218,7 +6218,7 @@ Transform:
   m_GameObject: {fileID: 1028882465}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.74, y: 4.512, z: 7.25}
+  m_LocalPosition: {x: 7.74, y: 5.03, z: 7.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6350,7 +6350,7 @@ Transform:
   m_GameObject: {fileID: 1083923408}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.219, y: -1.234, z: 7.511}
+  m_LocalPosition: {x: -5.219, y: -0.72, z: 7.511}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8922,6 +8922,7 @@ MonoBehaviour:
   SpeedMin: 1.5
   SpeedMax: 10
   DirectionDispersion: 5
+  GoldenChance: 0.05
   Target: {fileID: 1226806713}
 --- !u!114 &1474196733
 MonoBehaviour:
@@ -9177,7 +9178,7 @@ Transform:
   m_GameObject: {fileID: 1522383274}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.134, y: 1.664, z: -6.587}
+  m_LocalPosition: {x: -7.134, y: 2.17, z: -6.587}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11801,6 +11802,21 @@ PrefabInstance:
 
 '
       objectReference: {fileID: 0}
+    - target: {fileID: 1884466330209184908, guid: 8ef8c98852a6f494c97ab4073099c9a6,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    - target: {fileID: 3137342300761782301, guid: 8ef8c98852a6f494c97ab4073099c9a6,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4281479730
+      objectReference: {fileID: 0}
+    - target: {fileID: 3137342300761782301, guid: 8ef8c98852a6f494c97ab4073099c9a6,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 3991132901901019037, guid: 8ef8c98852a6f494c97ab4073099c9a6,
         type: 3}
       propertyPath: m_Color.b
@@ -11815,6 +11831,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Color.r
       value: 0.7490196
+      objectReference: {fileID: 0}
+    - target: {fileID: 4594284226356680199, guid: 8ef8c98852a6f494c97ab4073099c9a6,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 2583691263
+      objectReference: {fileID: 0}
+    - target: {fileID: 4594284226356680199, guid: 8ef8c98852a6f494c97ab4073099c9a6,
+        type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
       objectReference: {fileID: 0}
     - target: {fileID: 4910490910556331826, guid: 8ef8c98852a6f494c97ab4073099c9a6,
         type: 3}

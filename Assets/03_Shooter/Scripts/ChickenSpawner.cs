@@ -23,7 +23,7 @@ namespace Starter.Shooter
         [Header("Chicken Siege")]
         [Tooltip("EJERCICIO 1: probabilidad de que un pollo salga dorado (vale 5 puntos)")]
         [Range(0f, 1f)]
-        public float GoldenChance = 0.1f;
+        public float GoldenChance = 0.05f;
         [Tooltip("Collider al que apuntan los pollos (el del castillo). Vacío = el centro del spawner con dispersión")]
         public Collider Target;
 

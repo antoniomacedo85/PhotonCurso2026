@@ -5230,6 +5230,10 @@ MonoBehaviour:
   FlyParticles: {fileID: 7389053794093939891}
   DamageToCastle: 10
   HitClip: {fileID: 8300000, guid: 7d9e0217e3d48f14e9a3b9dd7eb16ae9, type: 3}
+  GoldenDeathClip: {fileID: 8300000, guid: dc86f3bef8384e145b23fba67a4f02ad, type: 3}
+  _IsGolden:
+    RawValue: 0
+  GoldenColor: {r: 0.990566, g: 0.7893877, b: 0.042052314, a: 1}
 --- !u!114 &1273232568399176134
 MonoBehaviour:
   m_ObjectHideFlags: 0

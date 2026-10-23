@@ -66,6 +66,10 @@ namespace Starter.Shooter
         public int RepairAmount = 2;
         public float RepairInterval = 0.5f;
 
+        [Header("Chicken Siege · Puntos")]
+        [Tooltip("Puntos que se pierden al morir (antes se reiniciaban a 0)")]
+        public int DeathPenalty = 5;
+
         [Networked, OnChangedRender(nameof(OnJumpingChanged))]
         private NetworkBool _isJumping { get; set; }
         [Networked]
@@ -294,7 +298,8 @@ namespace Starter.Shooter
 
         private void Respawn(Vector3 position)
         {
-            ChickenKills = 0;
+            // CHICKEN SIEGE: morir resta puntos en vez de reiniciar el marcador
+            ChickenKills = Mathf.Max(0, ChickenKills - DeathPenalty);
             Health.Revive();
 
             KCC.SetPosition(position);

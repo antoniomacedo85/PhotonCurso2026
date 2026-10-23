@@ -27,6 +27,10 @@ namespace Starter.Shooter
         public NetworkBool IsGolden { get; set; }
 
         public Color GoldenColor = new Color(1f, 0.78f, 0.15f);
+        [Tooltip("Suena en todas las pantallas cuando muere un pollo dorado")]
+        public AudioClip GoldenDeathClip;
+
+        private bool _wasAlive = true;
 
         private Renderer[] _renderers;
         private Color[] _originalColors;
@@ -76,6 +80,14 @@ namespace Starter.Shooter
             var emission = FlyParticles.emission;
             emission.enabled = Health.IsAlive;
 
+            // CHICKEN SIEGE: sonido especial al morir un pollo dorado (en todas las pantallas)
+            bool alive = Health.IsAlive;
+            if (_wasAlive && alive == false && IsGolden)
+            {
+                PlaySound(GoldenDeathClip, 1f, 1.1f, 0.5f);
+            }
+            _wasAlive = alive;
+
             // Scale back to default size after hit.
             ScalingRoot.localScale = Vector3.Lerp(ScalingRoot.localScale, Vector3.one, Time.deltaTime * 2f);
         }
@@ -89,6 +101,7 @@ namespace Starter.Shooter
         {
             // Quien entra tarde también ve los pollos dorados que ya existen
             OnGoldenChanged();
+            _wasAlive = Health.IsAlive;
         }
 
         private void OnGoldenChanged()
@@ -169,7 +182,12 @@ namespace Starter.Shooter
 
         private void PlayHitSound()
         {
-            if (HitClip == null)
+            PlaySound(HitClip, 0.8f, UnityEngine.Random.Range(1.1f, 1.35f), 0.8f);
+        }
+
+        private void PlaySound(AudioClip clip, float volume, float pitch, float spatialBlend)
+        {
+            if (clip == null)
                 return;
 
             // Fuente temporal en la posición del pollo: el pollo puede reaparecer lejos antes de que acabe el sonido
@@ -177,16 +195,16 @@ namespace Starter.Shooter
             soundObject.transform.position = transform.position;
 
             var source = soundObject.AddComponent<AudioSource>();
-            source.clip = HitClip;
-            source.volume = 0.8f;
-            source.pitch = UnityEngine.Random.Range(1.1f, 1.35f);
-            source.spatialBlend = 0.8f;
+            source.clip = clip;
+            source.volume = volume;
+            source.pitch = pitch;
+            source.spatialBlend = spatialBlend;
             source.rolloffMode = AudioRolloffMode.Linear;
             source.minDistance = 10f;
             source.maxDistance = 150f;
             source.Play();
 
-            Destroy(soundObject, HitClip.length / source.pitch + 0.1f);
+            Destroy(soundObject, clip.length / source.pitch + 0.1f);
         }
     }
 }
