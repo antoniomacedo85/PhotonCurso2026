@@ -105,8 +105,9 @@ namespace Starter.Shooter
             _returning = true;
             IsGameOver = false;
 
+            // Apaga el Runner y recarga esta escena: volvemos al menú de Chicken Siege (lista de salas)
             if (Menu != null)
-                Menu.BackToMenu(); // Shutdown del Runner y vuelta a la escena 0 (menú principal)
+                Menu.DisconnectClicked();
         }
     }
 }
