@@ -82,7 +82,8 @@ namespace Starter.Shooter
 
             if (_lastChickens != player.ChickenKills)
             {
-                if (player.ChickenKills > _lastChickens && player.ChickenKills > 0)
+                // CHICKEN SIEGE: sin clip no suena nada (el cacareo del pollo ya avisa del acierto)
+                if (player.ChickenKills > _lastChickens && player.ChickenKills > 0 && ChickenKillClip != null)
                 {
                     AudioSource.PlayOneShot(ChickenKillClip);
                 }

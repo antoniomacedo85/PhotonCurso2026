@@ -15,6 +15,12 @@ namespace Starter.Shooter
         public NetworkTransform NetworkTransform;
         public ParticleSystem FlyParticles;
 
+        [Header("Chicken Siege")]
+        [Tooltip("Daño que hace al castillo cuando choca contra él")]
+        public int DamageToCastle = 10;
+        [Tooltip("Cacareo cuando recibe un disparo que no lo mata (la muerte suena con DeathSound, dentro de DeathRoot)")]
+        public AudioClip HitClip;
+
         // Properties are used only on master client however it needs
         // to be networked to properly work when master client is changed.
         [Networked]
@@ -75,6 +81,18 @@ namespace Starter.Shooter
             if (HasStateAuthority == false)
                 return;
 
+            // CLASE 2: un pollo ya muerto no vuelve a hacer daño
+            if (Health.IsAlive == false)
+                return;
+
+            // CLASE 2: si chocamos contra el castillo, le hacemos daño.
+            // TakeHit envía un RPC al dueño del castillo (el master client).
+            var castle = other.GetComponentInParent<Castle>();
+            if (castle != null)
+            {
+                castle.Health.TakeHit(DamageToCastle);
+            }
+
             // Chicken collided, let's destroy it
             Health.TakeHit(1000);
         }
@@ -82,6 +100,37 @@ namespace Starter.Shooter
         private void OnHitReceived()
         {
             ScalingRoot.localScale = new Vector3(1.4f, 1.4f, 1.4f);
+
+            // CHICKEN SIEGE: cacareo si el golpe no lo mata.
+            // Si lo mata, suena DeathSound al activarse DeathRoot (así no suena doble).
+            // Quien dispara recibe este evento antes de que baje la vida: con 1 de vida, el disparo mata.
+            bool killed = Health.IsAlive == false || Health.CurrentHealth <= 1;
+            if (killed == false)
+            {
+                PlayHitSound();
+            }
+        }
+
+        private void PlayHitSound()
+        {
+            if (HitClip == null)
+                return;
+
+            // Fuente temporal en la posición del pollo: el pollo puede reaparecer lejos antes de que acabe el sonido
+            var soundObject = new GameObject("ChickenHitSound");
+            soundObject.transform.position = transform.position;
+
+            var source = soundObject.AddComponent<AudioSource>();
+            source.clip = HitClip;
+            source.volume = 0.8f;
+            source.pitch = UnityEngine.Random.Range(1.1f, 1.35f);
+            source.spatialBlend = 0.8f;
+            source.rolloffMode = AudioRolloffMode.Linear;
+            source.minDistance = 10f;
+            source.maxDistance = 150f;
+            source.Play();
+
+            Destroy(soundObject, HitClip.length / source.pitch + 0.1f);
         }
     }
 }

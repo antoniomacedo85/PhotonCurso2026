@@ -20,11 +20,25 @@ namespace Starter.Shooter
         public float SpeedMax = 15f;
         public float DirectionDispersion = 10f;
 
+        [Header("Chicken Siege")]
+        [Tooltip("Collider al que apuntan los pollos (el del castillo). Vacío = el centro del spawner con dispersión")]
+        public Collider Target;
+
         [Networked, Capacity(64)]
         private NetworkArray<Chicken> _chickens { get; }
 
+        // CLASE 2: multiplicadores según la dificultad de la sala
+        private float _speedMultiplier = 1f;
+        private float _healthMultiplier = 1f;
+
         public override void Spawned()
         {
+            // CLASE 2: leemos la propiedad de sala "Dificultad".
+            // Se calcula en todos los clientes, así un nuevo master client ya la tiene.
+            int difficulty = Difficulty.FromSession(Runner.SessionInfo);
+            _speedMultiplier = Difficulty.SpeedMultiplier(difficulty);
+            _healthMultiplier = Difficulty.HealthMultiplier(difficulty);
+
             if (HasStateAuthority == false)
                 return;
 
@@ -59,11 +73,26 @@ namespace Starter.Shooter
             var circlePosition = Random.insideUnitCircle.normalized * SpawnRadius;
             var position = new Vector3(circlePosition.x, Random.Range(SpawnHeightMin, SpawnHeightMax), circlePosition.y);
 
-            var rotationToCenter = Quaternion.LookRotation(transform.position - position);
-            var randomDispersion = Random.insideUnitSphere * DirectionDispersion;
-            var rotation = Quaternion.Euler(0f, randomDispersion.y, randomDispersion.z) * rotationToCenter;
+            Quaternion rotation;
+            if (Target != null)
+            {
+                // CHICKEN SIEGE: apuntamos a un punto al azar dentro del collider del castillo.
+                // Así siempre le pegan, aunque cambie el tamaño o la posición del castillo.
+                var bounds = Target.bounds;
+                var aimPoint = bounds.center + Vector3.Scale(Random.insideUnitSphere, bounds.extents * 0.6f);
+                rotation = Quaternion.LookRotation(aimPoint - position);
+            }
+            else
+            {
+                var rotationToCenter = Quaternion.LookRotation(transform.position - position);
+                var randomDispersion = Random.insideUnitSphere * DirectionDispersion;
+                rotation = Quaternion.Euler(0f, randomDispersion.y, randomDispersion.z) * rotationToCenter;
+            }
 
-            float speed = Random.Range(SpeedMin, SpeedMax);
+            float speed = Random.Range(SpeedMin, SpeedMax) * _speedMultiplier;
+
+            // CLASE 2: más vida en Difícil (Revive usa InitialHealth)
+            chicken.Health.InitialHealth = Mathf.CeilToInt(ChickenPrefab.Health.InitialHealth * _healthMultiplier);
 
             chicken.Respawn(position, rotation, speed, SpawnRadius * 2.5f);
         }

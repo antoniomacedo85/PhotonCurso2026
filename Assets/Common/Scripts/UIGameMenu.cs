@@ -36,12 +36,23 @@ namespace Starter
         [Tooltip("On-screen controls (joystick and buttons) used on mobile platforms")]
         public GameObject MobileControls;
 
+        [Header("Chicken Siege - Clase 2 (opcional)")]
+        [Tooltip("Desplegable Fácil / Normal / Difícil. Vacío = la sala se crea sin dificultad.")]
+        public TMP_Dropdown DifficultyDropdown;
+        [Tooltip("Lista de salas del lobby. Vacío = no se entra al lobby (como antes).")]
+        public UISessionList SessionList;
+
         private NetworkRunner _runnerInstance;
+        // CLASE 2: segundo Runner que solo mira la lista de salas (lobby). Se apaga al entrar a jugar.
+        private NetworkRunner _lobbyRunner;
         private static string _shutdownStatus;
 
         public async void StartGame()
         {
             await Disconnect();
+
+            // CLASE 2: dejamos de mirar la lista antes de entrar a una sala
+            await StopLobby();
 
             PlayerPrefs.SetString("PlayerName", NicknameText.text);
 
@@ -61,7 +72,7 @@ namespace Starter
                 PlayerCount = MaxPlayerCount,
                 // We need to specify a session property for matchmaking to decide where the player wants to join.
                 // Otherwise players from Platformer scene could connect to ThirdPersonCharacter game etc.
-                SessionProperties = new Dictionary<string, SessionProperty> { ["GameMode"] = GameModeIdentifier },
+                SessionProperties = BuildSessionProperties(),
                 Scene = sceneInfo,
             };
 
@@ -89,6 +100,7 @@ namespace Starter
         public async void BackToMenu()
         {
             await Disconnect();
+            await StopLobby();
 
             SceneManager.LoadScene(0);
         }
@@ -116,6 +128,103 @@ namespace Starter
             _shutdownStatus = null;
         }
 
+        private void Start()
+        {
+            // CLASE 2: al abrir el menú nos suscribimos a la lista de salas
+            if (SessionList != null && (Application.isEditor && ForceSinglePlayer) == false)
+            {
+                _ = StartLobby();
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_lobbyRunner != null)
+            {
+                _ = _lobbyRunner.Shutdown();
+                _lobbyRunner = null;
+            }
+        }
+
+        // ---------------- CLASE 2: LOBBY Y LISTA DE SALAS ----------------
+
+        private Dictionary<string, SessionProperty> BuildSessionProperties()
+        {
+            var properties = new Dictionary<string, SessionProperty>
+            {
+                // Separa los minijuegos del Starter (ya venía así)
+                ["GameMode"] = GameModeIdentifier,
+            };
+
+            // Propiedad de sala: la dificultad elegida al crearla
+            if (DifficultyDropdown != null)
+            {
+                properties[Difficulty.Key] = DifficultyDropdown.value;
+            }
+
+            return properties;
+        }
+
+        private async Task StartLobby()
+        {
+            _lobbyRunner = Instantiate(RunnerPrefab);
+            _lobbyRunner.name = "LobbyRunner";
+
+            // El prefab del Runner ya trae NetworkEvents: escuchamos la lista de salas
+            var events = _lobbyRunner.GetComponent<NetworkEvents>();
+            events.OnSessionListUpdate.AddListener(OnSessionListUpdate);
+
+            var result = await _lobbyRunner.JoinSessionLobby(SessionLobby.Shared);
+            if (result.Ok == false)
+            {
+                StatusText.text = $"Lobby: {result.ShutdownReason}";
+            }
+        }
+
+        private async Task StopLobby()
+        {
+            if (_lobbyRunner == null)
+                return;
+
+            var runner = _lobbyRunner;
+            _lobbyRunner = null;
+            await runner.Shutdown();
+        }
+
+        private void OnSessionListUpdate(NetworkRunner runner, List<SessionInfo> sessions)
+        {
+            if (SessionList == null)
+                return;
+
+            // Solo las salas de este minijuego
+            var filtered = new List<SessionInfo>();
+            foreach (var session in sessions)
+            {
+                if (session.Properties.TryGetValue("GameMode", out var gameMode) && (string)gameMode == GameModeIdentifier)
+                {
+                    filtered.Add(session);
+                }
+            }
+
+            SessionList.Refresh(filtered, JoinSession);
+        }
+
+        // Lo llama el botón "Unirse" de cada fila de la lista
+        public void JoinSession(SessionInfo session)
+        {
+            RoomText.text = session.Name;
+
+            // Usamos la misma dificultad que la sala para que las propiedades coincidan
+            if (DifficultyDropdown != null)
+            {
+                DifficultyDropdown.value = Difficulty.FromSession(session);
+            }
+
+            StartGame();
+        }
+
+        // -----------------------------------------------------------------
+
         private void Update()
         {
             // Toggle menu visibility with Enter/Esc keys
@@ -135,6 +244,18 @@ namespace Starter
                 RoomText.interactable = _runnerInstance == null;
                 NicknameText.interactable = _runnerInstance == null;
 
+                // CLASE 2: la dificultad y la lista solo tienen sentido fuera de una partida
+                if (DifficultyDropdown != null)
+                    DifficultyDropdown.interactable = _runnerInstance == null;
+                if (SessionList != null)
+                    SessionList.gameObject.SetActive(_runnerInstance == null);
+
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else if (Shooter.UICastle.IsGameOver)
+            {
+                // CHICKEN SIEGE: fin de partida, cursor libre para el botón "Volver al menú"
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }

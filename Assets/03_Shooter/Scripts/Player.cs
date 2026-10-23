@@ -2,6 +2,7 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using UnityEngine.Rendering;
+using UnityEngine.InputSystem;
 
 namespace Starter.Shooter
 {
@@ -60,6 +61,11 @@ namespace Starter.Shooter
         [Networked, HideInInspector]
         public int ChickenKills { get; set; }
 
+        // EJERCICIO 1 (solución): estado "Listo" visible para todos.
+        // Solo el dueño (State Authority) lo cambia; los demás reciben el cambio en OnReadyChanged.
+        [Networked, OnChangedRender(nameof(OnReadyChanged))]
+        public NetworkBool IsReady { get; set; }
+
         [Networked, OnChangedRender(nameof(OnJumpingChanged))]
         private NetworkBool _isJumping { get; set; }
         [Networked]
@@ -88,6 +94,9 @@ namespace Starter.Shooter
             // In case the nickname is already changed,
             // we need to trigger the change manually
             OnNicknameChanged();
+
+            // EJERCICIO 1: quien entra tarde también tiene que ver el estado actual
+            OnReadyChanged();
 
             // Reset visible fire count
             _visibleFireCount = _fireCount;
@@ -260,7 +269,9 @@ namespace Starter.Shooter
             {
                 // Deal damage
                 var health = hitInfo.collider != null ? hitInfo.collider.GetComponentInParent<Health>() : null;
-                if (health != null)
+
+                // CLASE 2 (cooperativo): solo dañamos pollos. Sin fuego amigo y sin disparar al castillo.
+                if (health != null && health.GetComponent<Chicken>() != null)
                 {
                     health.Killed = OnEnemyKilled;
                     health.TakeHit(1, true);
@@ -343,6 +354,25 @@ namespace Starter.Shooter
             {
                 ScalingRoot.localScale = _isJumping ? new Vector3(0.5f, 1.5f, 0.5f) : new Vector3(1.25f, 0.75f, 1.25f);
             }
+        }
+
+        // EJERCICIO 1: la tecla R alterna "Listo". Solo el dueño puede escribir la propiedad.
+        private void Update()
+        {
+            if (Object == null || Object.IsValid == false || HasStateAuthority == false)
+                return;
+
+            var keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
+            {
+                IsReady = !IsReady;
+            }
+        }
+
+        private void OnReadyChanged()
+        {
+            // El nameplate solo se ve en los jugadores remotos (el local no ve el suyo)
+            Nameplate.NicknameText.color = IsReady ? Color.green : Color.white;
         }
 
         private void OnNicknameChanged()

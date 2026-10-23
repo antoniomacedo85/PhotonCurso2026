@@ -43,7 +43,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 186de84b3207156479abe98f4958fed0, type: 3}
+  m_Resource: {fileID: 8300000, guid: 7d9e0217e3d48f14e9a3b9dd7eb16ae9, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.7
   m_Pitch: 1
@@ -5228,6 +5228,8 @@ MonoBehaviour:
   ScalingRoot: {fileID: 1487676574367041769}
   NetworkTransform: {fileID: 2412875901716685177}
   FlyParticles: {fileID: 7389053794093939891}
+  DamageToCastle: 10
+  HitClip: {fileID: 8300000, guid: 7d9e0217e3d48f14e9a3b9dd7eb16ae9, type: 3}
 --- !u!114 &1273232568399176134
 MonoBehaviour:
   m_ObjectHideFlags: 0
