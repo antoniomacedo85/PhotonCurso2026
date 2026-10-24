@@ -2,6 +2,7 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using UnityEngine.Rendering;
+using UnityEngine.InputSystem;
 
 namespace Starter.Shooter
 {
@@ -69,6 +70,13 @@ namespace Starter.Shooter
         [Networked]
         private int _fireCount { get; set; }
 
+        public float RepairDistance = 6f;
+        public int RepairAmount = 2;
+        public float RepairInterval = 0.5f;
+
+        private Castle _castle;
+        private float _nextRepairTime;
+
         private Vector3 _moveVelocity;
         private int _visibleFireCount;
         private float _fireCooldownEnd;
@@ -77,6 +85,8 @@ namespace Starter.Shooter
 
         public override void Spawned()
         {
+            _castle = FindFirstObjectByType<Castle>();
+
             if (HasStateAuthority)
             {
                 _gameManager = FindFirstObjectByType<GameManager>();
@@ -114,6 +124,22 @@ namespace Starter.Shooter
             }
         }
 
+        private void Update()
+        {
+            if (Object == null || Object.IsValid == false || HasStateAuthority == false)
+                return;
+
+            var keyboard = Keyboard.current;   // using UnityEngine.InputSystem;
+            if (keyboard == null || _castle == null || Health.IsAlive == false)
+                return;
+
+            if (keyboard.eKey.isPressed && Time.time >= _nextRepairTime &&
+                Vector3.Distance(transform.position, _castle.transform.position) <= RepairDistance)
+            {
+                _castle.RPC_Repair(RepairAmount);
+                _nextRepairTime = Time.time + RepairInterval;
+            }
+        }
         public override void FixedUpdateNetwork()
         {
             if (KCC.Position.y < -15f)
@@ -260,7 +286,7 @@ namespace Starter.Shooter
             {
                 // Deal damage
                 var health = hitInfo.collider != null ? hitInfo.collider.GetComponentInParent<Health>() : null;
-                if (health != null)
+                if (health != null && health.GetComponent<Chicken>() != null)
                 {
                     health.Killed = OnEnemyKilled;
                     health.TakeHit(1, true);
@@ -303,7 +329,8 @@ namespace Starter.Shooter
         private void OnEnemyKilled(Health enemyHealth)
         {
             // Killing chicken grants 1 point, killing other player has -10 points penalty.
-            ChickenKills += enemyHealth.GetComponent<Chicken>() != null ? 1 : -10;
+            var chicken = enemyHealth.GetComponent<Chicken>();
+            ChickenKills += chicken != null ? (chicken.IsGolden ? 5 : 1) : -10;
         }
 
         private void ShowFireEffects()

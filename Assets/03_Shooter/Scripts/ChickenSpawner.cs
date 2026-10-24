@@ -20,6 +20,9 @@ namespace Starter.Shooter
         public float SpeedMax = 15f;
         public float DirectionDispersion = 10f;
 
+        [Range(0f, 1f)]
+        public float GoldenChance = 0.15f;   // 5 % de pollos dorados
+
         [Networked, Capacity(64)]
         private NetworkArray<Chicken> _chickens { get; }
 
@@ -64,6 +67,8 @@ namespace Starter.Shooter
             var rotation = Quaternion.Euler(0f, randomDispersion.y, randomDispersion.z) * rotationToCenter;
 
             float speed = Random.Range(SpeedMin, SpeedMax);
+
+            chicken.IsGolden = Random.value < GoldenChance;
 
             chicken.Respawn(position, rotation, speed, SpawnRadius * 2.5f);
         }

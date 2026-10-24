@@ -39,9 +39,88 @@ namespace Starter
         private NetworkRunner _runnerInstance;
         private static string _shutdownStatus;
 
+        [Header("Chicken Siege - Clase 2 (opcional)")]
+        public TMP_Dropdown DifficultyDropdown;
+        public UISessionList SessionList;
+
+        private NetworkRunner _lobbyRunner;
+
+
+        private void Start()
+        {
+            if (SessionList != null && (Application.isEditor && ForceSinglePlayer) == false)
+            {
+                _ = StartLobby();
+            }
+        }
+
+        private async Task StartLobby()
+        {
+            _lobbyRunner = Instantiate(RunnerPrefab);
+            _lobbyRunner.name = "LobbyRunner";
+
+            // El prefab del Runner ya trae NetworkEvents: escuchamos la lista de salas
+            var events = _lobbyRunner.GetComponent<NetworkEvents>();
+            events.OnSessionListUpdate.AddListener(OnSessionListUpdate);
+
+            var result = await _lobbyRunner.JoinSessionLobby(SessionLobby.Shared);
+            if (result.Ok == false)
+            {
+                StatusText.text = $"Lobby: {result.ShutdownReason}";
+            }
+        }
+
+        private async Task StopLobby()
+        {
+            if (_lobbyRunner == null)
+                return;
+
+            var runner = _lobbyRunner;
+            _lobbyRunner = null;
+            await runner.Shutdown();
+        }
+
+        private void OnSessionListUpdate(NetworkRunner runner, List<SessionInfo> sessions)
+        {
+            var filtered = new List<SessionInfo>();
+            foreach (var session in sessions)
+            {
+                if (session.Properties.TryGetValue("GameMode", out var gameMode) && (string)gameMode == GameModeIdentifier)
+                {
+                    filtered.Add(session);
+                }
+            }
+
+            // Le pasamos a la lista qué hacer al pulsar "Unirse": nuestro JoinSession (paso 2.5)
+            SessionList.Refresh(filtered, JoinSession);
+        }
+
+        private void OnDestroy()
+        {
+            if (_lobbyRunner != null)
+            {
+                _ = _lobbyRunner.Shutdown();
+                _lobbyRunner = null;
+            }
+        }
+
+        public void JoinSession(SessionInfo session)
+        {
+            RoomText.text = session.Name;
+
+            // Misma dificultad que la sala, para que las propiedades coincidan
+            if (DifficultyDropdown != null)
+            {
+                DifficultyDropdown.value = Difficulty.FromSession(session);
+            }
+
+            StartGame();
+        }
         public async void StartGame()
         {
             await Disconnect();
+
+            await StopLobby();
 
             PlayerPrefs.SetString("PlayerName", NicknameText.text);
 
@@ -61,7 +140,7 @@ namespace Starter
                 PlayerCount = MaxPlayerCount,
                 // We need to specify a session property for matchmaking to decide where the player wants to join.
                 // Otherwise players from Platformer scene could connect to ThirdPersonCharacter game etc.
-                SessionProperties = new Dictionary<string, SessionProperty> { ["GameMode"] = GameModeIdentifier },
+                SessionProperties = BuildSessionProperties(),
                 Scene = sceneInfo,
             };
 
@@ -81,6 +160,21 @@ namespace Starter
             }
         }
 
+        private Dictionary<string, SessionProperty> BuildSessionProperties()
+            {
+                var properties = new Dictionary<string, SessionProperty>
+                {
+                    ["GameMode"] = GameModeIdentifier,
+                };
+
+                if (DifficultyDropdown != null)
+                {
+                    properties[Difficulty.Key] = DifficultyDropdown.value;   // int: 0, 1 o 2
+                }
+
+                return properties;
+            }
+
         public async void DisconnectClicked()
         {
             await Disconnect();
@@ -89,6 +183,7 @@ namespace Starter
         public async void BackToMenu()
         {
             await Disconnect();
+            await StopLobby();
 
             SceneManager.LoadScene(0);
         }
@@ -130,6 +225,11 @@ namespace Starter
 
             if (PanelGroup.gameObject.activeSelf)
             {
+
+                if (DifficultyDropdown != null)
+                    DifficultyDropdown.interactable = _runnerInstance == null;
+                if (SessionList != null)
+                    SessionList.gameObject.SetActive(_runnerInstance == null);
                 StartGroup.SetActive(_runnerInstance == null);
                 DisconnectGroup.SetActive(_runnerInstance != null);
                 RoomText.interactable = _runnerInstance == null;
