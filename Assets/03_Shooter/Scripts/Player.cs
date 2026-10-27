@@ -61,6 +61,11 @@ namespace Starter.Shooter
         [Networked, HideInInspector]
         public int ChickenKills { get; set; }
 
+        // CLASE 3 · ¿Listo para empezar? Lo escribe SOLO el dueño de este jugador (pulsando R).
+        // El master lo LEE para saber si todos están listos. Nadie tiene que mandarle nada.
+        [Networked]
+        public NetworkBool IsReady { get; set; }
+
         [Networked, OnChangedRender(nameof(OnJumpingChanged))]
         private NetworkBool _isJumping { get; set; }
         [Networked]
@@ -75,6 +80,8 @@ namespace Starter.Shooter
         public float RepairInterval = 0.5f;
 
         private Castle _castle;
+
+        private GameFlow _gameFlow;
         private float _nextRepairTime;
 
         private Vector3 _moveVelocity;
@@ -86,6 +93,7 @@ namespace Starter.Shooter
         public override void Spawned()
         {
             _castle = FindFirstObjectByType<Castle>();
+            _gameFlow = FindFirstObjectByType<GameFlow>();
 
             if (HasStateAuthority)
             {
@@ -126,11 +134,23 @@ namespace Starter.Shooter
 
         private void Update()
         {
+            // Solo el dueño de este jugador lee SU teclado
             if (Object == null || Object.IsValid == false || HasStateAuthority == false)
                 return;
 
             var keyboard = Keyboard.current;   // using UnityEngine.InputSystem;
-            if (keyboard == null || _castle == null || Health.IsAlive == false)
+            if (keyboard == null)
+                return;
+
+            // CLASE 3 · R = listo / no listo. Solo tiene sentido en la sala de espera.
+            if (keyboard.rKey.wasPressedThisFrame && _gameFlow != null && _gameFlow.State == GameFlow.GameState.Waiting)
+            {
+                // Es MI jugador: escribo mi estado directamente, sin RPC
+                IsReady = !IsReady;
+            }
+
+            // CLASE 2 · Reparar el castillo con E (igual que antes)
+            if (_castle == null || Health.IsAlive == false)
                 return;
 
             if (keyboard.eKey.isPressed && Time.time >= _nextRepairTime &&

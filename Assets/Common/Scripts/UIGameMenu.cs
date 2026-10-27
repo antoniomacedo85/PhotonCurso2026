@@ -238,6 +238,14 @@ namespace Starter
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
+
+            else if (Shooter.UICastle.IsGameOver)
+            {
+                // CHICKEN SIEGE: fin de partida, cursor libre para pulsar "Volver al menú"
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            
             else
             {
                 Cursor.lockState = CursorLockMode.Locked;

@@ -1509,12 +1509,12 @@ PrefabInstance:
     - target: {fileID: 2994450784291944097, guid: 7982010521474383b01288169643cca2,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: -1879.0773
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2994450784291944097, guid: 7982010521474383b01288169643cca2,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 564.51605
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2994450784291944097, guid: 7982010521474383b01288169643cca2,
         type: 3}
@@ -1554,12 +1554,12 @@ PrefabInstance:
     - target: {fileID: 2994450784291944097, guid: 7982010521474383b01288169643cca2,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 22.491394
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2994450784291944097, guid: 7982010521474383b01288169643cca2,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -282.25806
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2994450784291944097, guid: 7982010521474383b01288169643cca2,
         type: 3}
@@ -7008,6 +7008,73 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1795650443}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1467099620
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1467099623}
+  - component: {fileID: 1467099622}
+  - component: {fileID: 1467099621}
+  m_Layer: 0
+  m_Name: GameFlow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1467099621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1467099620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9428181f67a449baac7dd7ea19b89d3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Starter.Shooter.GameFlow
+  CountdownSeconds: 3
+  _State: 0
+--- !u!114 &1467099622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1467099620}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 3189872408
+  SendPriority: 1
+  EnableInterpolation: 1
+  Flags: 131074
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 1467099621}
+  ForceRemoteRenderTimeframe: 0
+--- !u!4 &1467099623
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1467099620}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1469693661
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8693,6 +8760,54 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4f68d635a92ba44e88fb07bb116b223, type: 3}
+--- !u!1 &2045162054
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2045162056}
+  - component: {fileID: 2045162055}
+  m_Layer: 0
+  m_Name: UIGameFlow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2045162055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2045162054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 434ddc7fc8ea4f75b14b8671c485b588, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Starter.Shooter.UIGameFlow
+  CountdownClip: {fileID: 8300000, guid: dc86f3bef8384e145b23fba67a4f02ad, type: 3}
+  AnnounceClip: {fileID: 0}
+  BannerSeconds: 2.5
+  NotificationSeconds: 5
+--- !u!4 &2045162056
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2045162054}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 503.99524, y: 690.6431, z: -880.0344}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2070767587
 GameObject:
   m_ObjectHideFlags: 0
@@ -9732,3 +9847,5 @@ SceneRoots:
   - {fileID: 1474196734}
   - {fileID: 1519511504}
   - {fileID: 1379566886}
+  - {fileID: 1467099623}
+  - {fileID: 2045162056}
