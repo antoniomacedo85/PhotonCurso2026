@@ -65,6 +65,15 @@ namespace Starter.Shooter
         // El master lo LEE para saber si todos están listos. Nadie tiene que mandarle nada.
         [Networked]
         public NetworkBool IsReady { get; set; }
+        // CLASE 3 · Power-ups activos. Son MÍOS: los escribo yo y los demás los pueden leer.
+// TickTimer = "hasta qué tick dura". Termina a la vez en todos los ordenadores.
+        [Networked]
+        public TickTimer MachineGunTimer { get; set; }
+        [Networked]
+        public TickTimer DoublePointsTimer { get; set; }
+
+        public bool HasMachineGun => MachineGunTimer.ExpiredOrNotRunning(Runner) == false;
+        public bool HasDoublePoints => DoublePointsTimer.ExpiredOrNotRunning(Runner) == false;
 
         [Networked, OnChangedRender(nameof(OnJumpingChanged))]
         private NetworkBool _isJumping { get; set; }
@@ -89,6 +98,9 @@ namespace Starter.Shooter
         private float _fireCooldownEnd;
 
         private GameManager _gameManager;
+
+        // CLASE 3 · Los pollos esperan a que la partida esté en juego
+        
 
         public override void Spawned()
         {
@@ -289,7 +301,9 @@ namespace Starter.Shooter
             {
                 Fire();
 
-                _fireCooldownEnd = Time.time + FireCadence;
+                // CLASE 3 · Con la ametralladora disparamos 3 veces más rápido
+                float cadence = HasMachineGun ? FireCadence / 3f : FireCadence;
+                _fireCooldownEnd = Time.time + cadence;
             }
         }
 
@@ -348,9 +362,22 @@ namespace Starter.Shooter
 
         private void OnEnemyKilled(Health enemyHealth)
         {
-            // Killing chicken grants 1 point, killing other player has -10 points penalty.
             var chicken = enemyHealth.GetComponent<Chicken>();
-            ChickenKills += chicken != null ? (chicken.IsGolden ? 5 : 1) : -10;
+            if (chicken == null)
+                return;
+
+            // CLASE 3 · Cada tipo de pollo vale lo que diga su prefab (Points)
+            int points = chicken.Points;
+
+            // El pollo dorado vale x5
+            if (chicken.IsGolden)
+                points *= 5;
+
+            // EJERCICIO (power-up Puntos x2)
+            if (HasDoublePoints)
+                points *= 2;
+
+            ChickenKills += points;
         }
 
         private void ShowFireEffects()
@@ -399,5 +426,49 @@ namespace Starter.Shooter
 
             Nameplate.SetNickname(Nickname);
         }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            // Solo el jugador LOCAL pide power-ups (igual que las monedas del Platformer).
+            // Los demás ordenadores también ven el choque, pero no son dueños de este jugador.
+            if (HasStateAuthority == false)
+                return;
+
+            var powerUp = other.GetComponentInParent<PowerUp>();
+            if (powerUp != null)
+            {
+                // Se lo PEDIMOS al dueño del power-up. Si nos lo da, llamará a OnPowerUpCollected.
+                powerUp.RequestPickup(OnPowerUpCollected);
+            }
+        }
+
+        /// Solo se ejecuta si el master nos dio el power-up A NOSOTROS.
+        private void OnPowerUpCollected(PowerUp powerUp)
+        {
+            switch (powerUp.Type)
+            {
+                case PowerUpType.MachineGun:
+                    // Toca a MI jugador: escribo mi estado directamente
+                    MachineGunTimer = TickTimer.CreateFromSeconds(Runner, powerUp.Duration);
+                    break;
+
+                case PowerUpType.Repair:
+                    // Toca al CASTILLO, que NO es mío: se lo pido a su dueño con un RPC
+                    if (_castle != null)
+                    {
+                        _castle.RPC_Repair(powerUp.RepairAmount);
+                    }
+                    break;
+                    
+                case PowerUpType.DoublePoints:
+                    // Toca a MI marcador -> directo, como la ametralladora
+                    DoublePointsTimer = TickTimer.CreateFromSeconds(Runner, powerUp.Duration);
+                    break;
+            }
+        }
+
+
     }
+
+    
 }

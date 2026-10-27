@@ -44,6 +44,17 @@ namespace Starter
             }
         }
 
+        /// <summary>CLASE 3 · Cantidad de pollos por oleada: Fácil menos, Difícil más.</summary>
+        public static float CountMultiplier(int difficulty)
+        {
+            switch (difficulty)
+            {
+                case 0: return 0.7f;
+                case 2: return 1.4f;
+                default: return 1f;
+            }
+        }
+
         /// <summary>Vida de los pollos: en Difícil aguantan el doble.</summary>
         public static float HealthMultiplier(int difficulty)
         {

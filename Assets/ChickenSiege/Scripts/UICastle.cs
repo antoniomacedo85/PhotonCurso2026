@@ -32,6 +32,7 @@ namespace Starter.Shooter
 
         private float _gameOverTime = -1f;
         private bool _returning;
+        private GameFlow _gameFlow;
 
         private void Awake()
         {
@@ -39,6 +40,11 @@ namespace Starter.Shooter
 
             if (BackButton != null)
                 BackButton.onClick.AddListener(ReturnToMenu);
+        }
+
+        private void Start()
+        {
+            _gameFlow = FindFirstObjectByType<GameFlow>();
         }
 
         private void OnDestroy()
@@ -66,21 +72,28 @@ namespace Starter.Shooter
             if (HealthText != null)
                 HealthText.text = $"Castillo {Mathf.Max(0, health.CurrentHealth)}/{health.InitialHealth}";
 
-            if (DefeatGroup != null)
-                DefeatGroup.SetActive(Castle.IsDestroyed);
+            // CLASE 3 · ¿Hemos ganado? Lo dice la fase [Networked] del GameFlow (la decide el master)
+            bool victory = _gameFlow != null && _gameFlow.IsNetworkReady && _gameFlow.State == GameFlow.GameState.Victory;
+            bool gameOver = Castle.IsDestroyed || victory;
 
-            if (Castle.IsDestroyed)
+            if (DefeatGroup != null)
+                DefeatGroup.SetActive(gameOver);
+
+            if (gameOver)
             {
-                UpdateGameOver();
+                UpdateGameOver(victory);
             }
         }
 
-        private void UpdateGameOver()
+        private void UpdateGameOver(bool victory)
         {
             if (_gameOverTime < 0f)
             {
                 _gameOverTime = Time.time;
                 IsGameOver = true;
+                // CLASE 3 · Mismo cartel para ganar y perder: solo cambia el texto
+                var title = DefeatGroup.transform.Find("Text").GetComponent<TextMeshProUGUI>();
+                title.text = victory ? "¡VICTORIA!" : "¡El castillo cayó!";
             }
 
             if (Scoreboard != null)

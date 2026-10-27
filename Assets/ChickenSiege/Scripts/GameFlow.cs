@@ -85,8 +85,8 @@ namespace Starter.Shooter
                         // PASO 5 · DESCOMENTAD estas dos líneas después de la demo del que entra tarde:
                         // cerramos la sala para que nadie aparezca en mitad de una oleada.
                         // Solo el master puede cambiar estas propiedades de la sala.
-                        // Runner.SessionInfo.IsOpen = false;
-                        // Runner.SessionInfo.IsVisible = false;
+                        Runner.SessionInfo.IsOpen = false;
+                        Runner.SessionInfo.IsVisible = false;
                     }
                     break;
 
