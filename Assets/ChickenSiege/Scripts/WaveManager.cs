@@ -217,7 +217,8 @@ namespace Starter.Shooter
                 // les llegará ya configurado, sin un instante "a medio hacer".
                 var chicken = networkObject.GetComponent<Chicken>();
                 chicken.Health.InitialHealth = Mathf.CeilToInt(chicken.Health.InitialHealth * healthMultiplier);
-                chicken.Init(speed, maxTravelDistance, golden);
+                // CLASE 4 · Pasamos el tick de salida: el "cero" de la fórmula de vuelo
+                chicken.Init(speed, maxTravelDistance, golden, runner.Tick.Raw);
             });
         }
 

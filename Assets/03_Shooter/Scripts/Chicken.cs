@@ -17,13 +17,22 @@ namespace Starter.Shooter
     /// CLASE 3 · TIPOS DE POLLO
     ///  Speed, Points, DamageToCastle, IsBoss y Tint se ajustan en cada PREFAB VARIANT
     ///  (Chicken_Fast, Chicken_Giant, Chicken_Boss). La vida está en el componente Health.
+    ///
+    /// CLASE 4 · EL POLLO LIGERO (optimización)
+    ///  Antes: NetworkTransform mandaba posición y rotación de CADA pollo en CADA tick.
+    ///  Ahora: el pollo vuela en línea recta, así que su posición es una FÓRMULA:
+    ///
+    ///      posición = inicio + dirección × velocidad × tiempo que lleva volando
+    ///
+    ///  Solo mandamos los datos de la fórmula UNA VEZ (al nacer). Cada ordenador
+    ///  calcula la posición él solo, en cada fotograma. Ancho de banda: casi cero.
+    ///  ¡Quitad el componente NetworkTransform del prefab Chicken!
     /// </summary>
     public class Chicken : NetworkBehaviour
     {
         [Header("References")]
         public Health Health;
         public Transform ScalingRoot;
-        public NetworkTransform NetworkTransform;
         public ParticleSystem FlyParticles;
 
         [Header("Chicken Siege · Tipo de pollo")]
@@ -37,6 +46,12 @@ namespace Starter.Shooter
         public bool IsBoss;
         [Tooltip("Color del plumaje (blanco = el original)")]
         public Color Tint = Color.white;
+
+        [Header("Chicken Siege · Vuelo ondulado (EJERCICIO clase 4)")]
+        [Tooltip("Cuánto sube y baja mientras vuela (0 = recto)")]
+        public float WobbleHeight = 0f;
+        [Tooltip("Lo rápido que sube y baja")]
+        public float WobbleSpeed = 4f;
 
         [Header("Chicken Siege · Sonidos")]
         [Tooltip("Cacareo cuando recibe un disparo que no lo mata (la muerte suena con DeathSound, dentro de DeathRoot)")]
@@ -65,6 +80,15 @@ namespace Starter.Shooter
         [Networked]
         private float _maxTravelDistance { get; set; }
 
+        // CLASE 4 · Los datos de la fórmula. Se escriben UNA vez (en Init) y ya no cambian:
+        // por eso no gastan ancho de banda después del primer envío.
+        [Networked, OnChangedRender(nameof(OnDirectionChanged))]
+        private Vector3 _direction { get; set; }
+        [Networked]
+        private int _startTick { get; set; }   // tick en el que empezó a volar
+        [Networked]
+        private int _endTick { get; set; }     // tick en el que murió (0 = sigue volando)
+
         private bool _wasAlive = true;
         private Renderer[] _renderers;
         private Color[] _originalColors;
@@ -84,10 +108,14 @@ namespace Starter.Shooter
         /// <summary>
         /// CLASE 3 · Configura un pollo recién creado. Se llama en onBeforeSpawned:
         /// el pollo aún no existe para los demás, así que les llegará ya configurado.
+        /// CLASE 4 · Recibe también el tick de salida: es el "cero" del cronómetro del vuelo.
         /// </summary>
-        public void Init(float speed, float maxTravelDistance, bool golden)
+        public void Init(float speed, float maxTravelDistance, bool golden, int startTick)
         {
             _startPosition = transform.position;
+            _direction = transform.forward;
+            _startTick = startTick;
+            _endTick = 0;
             _speed = speed;
             _maxTravelDistance = maxTravelDistance;
             IsGolden = golden;
@@ -98,11 +126,31 @@ namespace Starter.Shooter
         {
             Health.Revive();
 
-            _startPosition = position;
-            _speed = speed;
-            _maxTravelDistance = maxTravelDistance;
+            // CLASE 4 · Ya no hay NetworkTransform.Teleport: basta con reiniciar la fórmula
+            transform.SetPositionAndRotation(position, rotation);
+            Init(speed, maxTravelDistance, IsGolden, Runner.Tick.Raw);
+        }
 
-            NetworkTransform.Teleport(position, rotation);
+        /// <summary>
+        /// CLASE 4 · LA FÓRMULA. ¿Dónde está el pollo en este tick?
+        /// tick puede tener decimales (en Render pintamos ENTRE dos ticks).
+        /// </summary>
+        public Vector3 GetPosition(float tick)
+        {
+            // Si murió, se queda quieto donde murió
+            if (_endTick > 0 && tick > _endTick)
+            {
+                tick = _endTick;
+            }
+
+            float secondsFlying = Mathf.Max(0f, tick - _startTick) * Runner.DeltaTime;
+            var position = _startPosition + _direction * _speed * secondsFlying;
+
+            // EJERCICIO · Vuelo ondulado: sigue siendo una fórmula del tiempo -> sigue sin gastar red.
+            // WobbleHeight es del PREFAB (igual en todos los ordenadores), no hace falta [Networked].
+            position.y += Mathf.Sin(secondsFlying * WobbleSpeed) * WobbleHeight;
+
+            return position;
         }
 
         public override void Spawned()
@@ -113,6 +161,11 @@ namespace Starter.Shooter
             // Quien entra tarde también ve los pollos dorados que ya existen
             OnGoldenChanged();
             _wasAlive = Health.IsAlive;
+
+            // CLASE 4 · Sin NetworkTransform, nadie nos dice dónde aparecer:
+            // lo calculamos nosotros con la fórmula (también quien entra tarde)
+            OnDirectionChanged();
+            transform.position = GetPosition(Runner.Tick.Raw);
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
@@ -139,22 +192,37 @@ namespace Starter.Shooter
 
 
             if (Health.IsAlive == false)
+            {
+                // CLASE 4 · Apuntamos cuándo murió: a partir de ahí la fórmula lo deja quieto
+                if (_endTick == 0)
+                {
+                    _endTick = Runner.Tick.Raw;
+                }
                 return;
+            }
+
+            // CLASE 4 · El dueño también usa la fórmula (antes: transform.Translate cada tick).
+            // Así el pollo choca con el castillo en el ordenador del master, como antes.
+            transform.position = GetPosition(Runner.Tick.Raw);
 
             if (Vector3.Distance(_startPosition, transform.position) > _maxTravelDistance)
             {
                 // Chicken is too far, kill itself
                 Health.TakeHit(1000);
-                return;
             }
-
-            // Move the chicken.
-            // The chicken position and rotation is synchronized to all clients via NetworkTransform component.
-            transform.Translate(Vector3.forward * _speed * Runner.DeltaTime, Space.Self);
         }
 
         public override void Render()
         {
+            // CLASE 4 · Cada fotograma, cada ordenador calcula la posición con la fórmula.
+            //  · El dueño pinta su tiempo actual (LocalRenderTime).
+            //  · Los demás pintan un poquito en el pasado (RemoteRenderTime), igual que hacía
+            //    NetworkTransform al interpolar: así lo que ven encaja con lo que ya les llegó
+            //    (por ejemplo, la muerte del pollo).
+            // El tiempo viene en segundos; al dividir por DeltaTime lo pasamos a ticks (con decimales).
+            float renderTime = Object.IsProxy ? Runner.RemoteRenderTime : Runner.LocalRenderTime;
+            transform.position = GetPosition(renderTime / Runner.DeltaTime);
+
             var emission = FlyParticles.emission;
             emission.enabled = Health.IsAlive;
 
@@ -173,6 +241,15 @@ namespace Starter.Shooter
         private void Awake()
         {
             Health.HitReceived += OnHitReceived;
+        }
+
+        /// <summary>CLASE 4 · El pollo mira hacia donde vuela (antes lo sincronizaba NetworkTransform).</summary>
+        private void OnDirectionChanged()
+        {
+            if (_direction != Vector3.zero)
+            {
+                transform.rotation = Quaternion.LookRotation(_direction);
+            }
         }
 
         private void OnGoldenChanged()

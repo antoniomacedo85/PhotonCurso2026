@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Fusion;
 using TMPro;
@@ -123,6 +123,8 @@ namespace Starter
             await StopLobby();
 
             PlayerPrefs.SetString("PlayerName", NicknameText.text);
+            // CLASE 4 · Apuntamos la sala para poder volver si se corta
+            PlayerPrefs.SetString("LastRoom", RoomText.text);
 
             _runnerInstance = Instantiate(RunnerPrefab);
 
@@ -156,7 +158,8 @@ namespace Starter
             }
             else
             {
-                StatusText.text = $"Connection Failed: {startTask.Result.ShutdownReason}";
+                // CLASE 4 · Explicamos el motivo (por ejemplo, GameClosed = la sala está cerrada)
+                StatusText.text = $"No se pudo entrar: {Explain(startTask.Result.ShutdownReason)}";
             }
         }
 
@@ -205,6 +208,13 @@ namespace Starter
             }
 
             NicknameText.text = nickname;
+
+            // CLASE 4 · Si se cortó la partida, dejamos escrita la sala para volver con un clic
+            var lastRoom = PlayerPrefs.GetString("LastRoom");
+            if (_shutdownStatus != null && string.IsNullOrEmpty(lastRoom) == false)
+            {
+                RoomText.text = lastRoom;
+            }
 
             // Try to load previous shutdown status
             StatusText.text = _shutdownStatus != null ? _shutdownStatus : string.Empty;
@@ -280,11 +290,35 @@ namespace Starter
             // Unexpected shutdown happened (e.g. Host disconnected)
 
             // Save status into static variable, it will be used in OnEnable after scene load
-            _shutdownStatus = $"Shutdown: {reason}";
-            Debug.LogWarning(_shutdownStatus);
+            // CLASE 4 · En vez de "Shutdown: PhotonCloudTimeout", algo que se entienda
+            _shutdownStatus = $"Se cortó la partida: {Explain(reason)}";
+            Debug.LogWarning($"Shutdown: {reason}");
 
             // Reset of scene network objects is needed, reload the whole scene
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        /// <summary>
+        /// CLASE 4 · ShutdownReason traducido. Es el "por qué" de cada desconexión.
+        /// </summary>
+        private static string Explain(ShutdownReason reason)
+        {
+            switch (reason)
+            {
+                case ShutdownReason.PhotonCloudTimeout:
+                case ShutdownReason.ConnectionTimeout:
+                    return "se perdió la conexión. Pulsa Start para volver a la sala.";
+                case ShutdownReason.GameClosed:
+                    return "la sala está cerrada (la partida ya empezó).";
+                case ShutdownReason.GameIsFull:
+                    return "la sala está llena.";
+                case ShutdownReason.GameNotFound:
+                    return "esa sala ya no existe.";
+                case ShutdownReason.DisconnectedByPluginLogic:
+                    return "el servidor nos ha desconectado.";
+                default:
+                    return reason.ToString();
+            }
         }
     }
 }
