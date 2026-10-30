@@ -5225,6 +5225,18 @@ MonoBehaviour:
   Health: {fileID: 1273232568399176134}
   ScalingRoot: {fileID: 1487676574367041769}
   FlyParticles: {fileID: 7389053794093939891}
+  Speed: 6
+  Points: 1
+  DamageToCastle: 10
+  IsBoss: 0
+  Tint: {r: 1, g: 1, b: 1, a: 1}
+  WobbleHeight: 0
+  WobbleSpeed: 4
+  HitClip: {fileID: 0}
+  GoldenDeathClip: {fileID: 0}
+  GoldenColor: {r: 1, g: 0.78, b: 0.15, a: 1}
+  _IsGolden:
+    RawValue: 0
 --- !u!114 &1273232568399176134
 MonoBehaviour:
   m_ObjectHideFlags: 0

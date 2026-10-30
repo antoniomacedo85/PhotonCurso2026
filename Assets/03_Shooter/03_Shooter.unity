@@ -4688,6 +4688,51 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1012192825}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1017944252
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1017944254}
+  - component: {fileID: 1017944253}
+  m_Layer: 0
+  m_Name: VoiceLogger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1017944253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1017944252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a86f533fd9917dd4da8601e9eb542c96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonVoice::Photon.Voice.Unity.VoiceLogger
+  LogLevel: 2
+--- !u!4 &1017944254
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1017944252}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1026249153
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7040,6 +7085,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Starter.Shooter.GameFlow
   CountdownSeconds: 3
   _State: 0
+  _SavedScores:
+    _items: []
 --- !u!114 &1467099622
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7299,13 +7346,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Starter.Shooter.WaveManager
   Waves:
-  - Normal: 2
-    Fast: 0
-    Giant: 0
-    Boss: 0
-  - Normal: 2
+  - Normal: 6
     Fast: 2
-    Giant: 0
+    Giant: 2
+    Boss: 0
+  - Normal: 15
+    Fast: 4
+    Giant: 6
+    Boss: 0
+  - Normal: 25
+    Fast: 5
+    Giant: 6
     Boss: 1
   NormalPrefab: {fileID: 5849090646797267333, guid: 4c968b03d91fd4d419b661b75a7d12f2,
     type: 3}
@@ -9883,3 +9934,4 @@ SceneRoots:
   - {fileID: 1379566886}
   - {fileID: 1467099623}
   - {fileID: 2045162056}
+  - {fileID: 1017944254}
