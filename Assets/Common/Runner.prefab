@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 2382109156329011261}
   - component: {fileID: 217005925201609585}
   - component: {fileID: 2529394852886910976}
-  - component: {fileID: 2148605037672375569}
   - component: {fileID: -8831017607848063955}
   m_Layer: 0
   m_Name: Runner
@@ -129,18 +128,6 @@ MonoBehaviour:
   BVHDepth: 0
   BVHNodes: 0
   TotalHitboxes: 0
---- !u!114 &2148605037672375569
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1690047586891269497}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 814d6db13cb046cc8c85a13cdb86ee98, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Fusion.Unity::Fusion.Statistics.FusionStatistics
 --- !u!114 &-8831017607848063955
 MonoBehaviour:
   m_ObjectHideFlags: 0
