@@ -66,7 +66,13 @@ namespace Starter.Shooter
         [Networked]
         public NetworkBool IsReady { get; set; }
         // CLASE 3 · Power-ups activos. Son MÍOS: los escribo yo y los demás los pueden leer.
-// TickTimer = "hasta qué tick dura". Termina a la vez en todos los ordenadores.
+        // TickTimer = "hasta qué tick dura". Termina a la vez en todos los ordenadores.
+
+        // RESERVA CLASE 4 · ¿Ya miré si tenía puntos guardados? Hasta que esté en true,
+        // el master NO apunta mis puntos (si no, guardaría un 0 encima de los buenos).
+        [Networked]
+        public NetworkBool ScoreChecked { get; set; }
+
         [Networked]
         public TickTimer MachineGunTimer { get; set; }
         [Networked]
@@ -174,6 +180,11 @@ namespace Starter.Shooter
         }
         public override void FixedUpdateNetwork()
         {
+            // RESERVA CLASE 4 · Recuperar mis puntos si vuelvo después de caerme
+            if (ScoreChecked == false)
+            {
+                TryRestoreScore();
+            }
             if (KCC.Position.y < -15f)
             {
                 // Player fell, let's kill him
@@ -339,6 +350,24 @@ namespace Starter.Shooter
             _fireCount++;
         }
 
+        /// <summary>
+        /// RESERVA CLASE 4 · ¿Volvemos después de caernos? Buscamos nuestro nombre en
+        /// GameFlow.SavedScores (lo escribe el master; nosotros solo LEEMOS).
+        /// Se reintenta cada tick hasta que el GameFlow esté listo en este ordenador.
+        /// </summary>
+        private void TryRestoreScore()
+        {
+            if (_gameFlow == null || _gameFlow.Object == null || _gameFlow.Object.IsValid == false)
+                return; // todavía no nos ha llegado: lo intentamos el próximo tick
+
+            if (_gameFlow.SavedScores.TryGet(Nickname, out var savedScore) && savedScore > 0)
+            {
+                ChickenKills = savedScore;
+                Debug.Log($"[Clase 4] Bienvenido de vuelta, {Nickname}: recuperas {savedScore} puntos");
+            }
+
+            ScoreChecked = true;
+        }
         private void Respawn(Vector3 position)
         {
             ChickenKills = 0;

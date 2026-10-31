@@ -7299,13 +7299,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Starter.Shooter.WaveManager
   Waves:
-  - Normal: 2
-    Fast: 0
-    Giant: 0
-    Boss: 0
-  - Normal: 2
+  - Normal: 6
     Fast: 2
     Giant: 0
+    Boss: 0
+  - Normal: 8
+    Fast: 4
+    Giant: 3
+    Boss: 0
+  - Normal: 10
+    Fast: 4
+    Giant: 3
     Boss: 1
   NormalPrefab: {fileID: 5849090646797267333, guid: 4c968b03d91fd4d419b661b75a7d12f2,
     type: 3}

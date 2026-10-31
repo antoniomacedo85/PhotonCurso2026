@@ -1,6 +1,7 @@
 using System;
 using Fusion;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Starter.Shooter
 {
@@ -18,7 +19,7 @@ namespace Starter.Shooter
     /// 4. LA CUENTA ATRÁS ES UN TickTimer. Cuenta ticks de simulación: termina en el mismo
     ///    momento en todos los ordenadores, aunque cada uno tenga un reloj distinto.
     /// </summary>
-    public class GameFlow : NetworkBehaviour
+    public class GameFlow : NetworkBehaviour, IStateAuthorityChanged, IPlayerJoined, IPlayerLeft
     {
         public enum GameState
         {
@@ -58,11 +59,16 @@ namespace Starter.Shooter
         /// <summary>Segundos que le quedan a la cuenta atrás (para la interfaz).</summary>
         public int CountdownSecondsLeft => Mathf.CeilToInt(Countdown.RemainingTime(Runner) ?? 0f);
 
+        // RESERVA CLASE 4 · Puntos de cada jugador, por nombre. Los escribe el master; los lee
+        // el jugador que vuelve después de caerse. Es ESTADO: sigue ahí aunque el jugador se vaya.
+        [Networked, Capacity(16)]
+        public NetworkDictionary<NetworkString<_32>, int> SavedScores => default;
         private Castle _castle;
 
         public override void Spawned()
         {
             _castle = FindFirstObjectByType<Castle>();
+            _lastMaster = Object.StateAuthority;
         }
 
         public override void FixedUpdateNetwork()
@@ -73,6 +79,9 @@ namespace Starter.Shooter
             if (HasStateAuthority == false)
                 return;
 
+            // RESERVA CLASE 4 · El master apunta los puntos de todos, por nombre
+            SaveScores();
+
             switch (State)
             {
                 case GameState.Waiting:
@@ -82,11 +91,13 @@ namespace Starter.Shooter
                         Countdown = TickTimer.CreateFromSeconds(Runner, CountdownSeconds);
                         State = GameState.Countdown;
 
-                        // PASO 5 · DESCOMENTAD estas dos líneas después de la demo del que entra tarde:
-                        // cerramos la sala para que nadie aparezca en mitad de una oleada.
-                        // Solo el master puede cambiar estas propiedades de la sala.
-                        Runner.SessionInfo.IsOpen = false;
-                        Runner.SessionInfo.IsVisible = false;
+                        // CLASE 4 · RECONEXIÓN. Política de sala durante la partida:
+                    //  · IsVisible = false -> desaparece de la lista: no entran desconocidos.
+                    //  · IsOpen sigue en true -> quien se cae PUEDE VOLVER escribiendo el nombre de la sala.
+                    // (En la clase 3 cerrábamos también IsOpen: así nadie podía reconectar.)
+                    // Solo el master puede cambiar estas propiedades de la sala.
+                    // Runner.SessionInfo.IsOpen = false;
+                    Runner.SessionInfo.IsVisible = false;
                     }
                     break;
 
@@ -166,6 +177,93 @@ namespace Starter.Shooter
             return playerCount > 0;
         }
 
+        // ------------------------------------------------------------------
+        // CLASE 4 · DESCONEXIONES
+        // Fusion nos avisa de estas cosas EN CADA ORDENADOR. No hace falta ningún RPC:
+        // cada uno se entera solo y pinta su aviso.
+        // ------------------------------------------------------------------
+
+        // Cuando alguien se va, su Player ya no existe: apuntamos los nombres mientras están
+        private readonly Dictionary<PlayerRef, string> _names = new Dictionary<PlayerRef, string>();
+        private PlayerRef _lastMaster;
+
+        /// <summary>
+        /// IStateAuthorityChanged · Cambió el dueño de ESTE objeto. Como GameFlow es
+        /// "Is Master Client Object", eso solo pasa cuando cambia el master.
+        /// </summary>
+        public void StateAuthorityChanged()
+        {
+            var newMaster = Object.StateAuthority;
+            if (newMaster == _lastMaster)
+                return;
+
+            _lastMaster = newMaster;
+            string you = newMaster == Runner.LocalPlayer ? " (¡eres tú!)" : "";
+            Notified?.Invoke($"Nuevo master: <b>{GetName(newMaster)}</b>{you}");
+            Debug.Log($"[Clase 4] Nuevo master: {GetName(newMaster)}. Ahora él mueve pollos, oleadas y castillo.");
+        }
+
+        /// <summary>IPlayerJoined · Alguien entró a la sala.</summary>
+        public void PlayerJoined(PlayerRef player)
+        {
+            if (player != Runner.LocalPlayer)
+                Notified?.Invoke("Ha entrado un jugador");
+        }
+
+        /// <summary>IPlayerLeft · Alguien se fue: cerró el juego, se le cayó internet...</summary>
+        public void PlayerLeft(PlayerRef player)
+        {
+            Notified?.Invoke($"<b>{GetName(player)}</b> se ha ido");
+            _names.Remove(player);
+        }
+
+        public override void Render()
+        {
+            // Apuntamos el nombre de cada jugador mientras está en la sala
+            foreach (var playerRef in Runner.ActivePlayers)
+            {
+                var player = GetPlayer(playerRef);
+                if (player != null && string.IsNullOrEmpty(player.Nickname) == false)
+                {
+                    _names[playerRef] = player.Nickname;
+                }
+            }
+        }
+
+        private string GetName(PlayerRef playerRef)
+        {
+            return _names.TryGetValue(playerRef, out var name) ? name : $"Jugador {playerRef.PlayerId}";
+        }
+
+        private Player GetPlayer(PlayerRef playerRef)
+        {
+            var playerObject = Runner.GetPlayerObject(playerRef);
+            return playerObject != null ? playerObject.GetComponent<Player>() : null;
+        }
+
+        /// <summary>
+        /// RESERVA CLASE 4 · El master apunta los puntos de cada jugador por su nombre.
+        /// Si alguien se cae y vuelve con el mismo nombre, Player.TryRestoreScore los recupera.
+        /// </summary>
+        private void SaveScores()
+        {
+            foreach (var playerRef in Runner.ActivePlayers)
+            {
+                var player = GetPlayer(playerRef);
+                if (player == null || string.IsNullOrEmpty(player.Nickname))
+                    continue;
+
+                // Recién llegado que aún no ha recuperado sus puntos: no le pisamos lo guardado
+                if (player.ScoreChecked == false)
+                    continue;
+
+                // El diccionario tiene sitio para 16 nombres
+                if (SavedScores.Count >= SavedScores.Capacity && SavedScores.ContainsKey(player.Nickname) == false)
+                    continue;
+
+                SavedScores.Set(player.Nickname, player.ChickenKills);
+            }
+        }
         private void OnStateChanged()
         {
             // Se ejecuta en TODOS los ordenadores cuando les llega la nueva fase
