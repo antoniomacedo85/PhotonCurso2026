@@ -37,6 +37,7 @@ namespace Starter.Shooter
         [Tooltip("Color del plumaje (blanco = el original)")]
         public Color Tint = Color.white;
 
+        
         [Header("Chicken Siege · Sonidos")]
         [Tooltip("Cacareo cuando recibe un disparo que no lo mata (la muerte suena con DeathSound, dentro de DeathRoot)")]
         public AudioClip HitClip;
